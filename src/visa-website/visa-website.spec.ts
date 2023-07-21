@@ -5,6 +5,7 @@ import { VisaWebsite } from './visa-website';
 
 describe('VisaWebsite', () => {
   let configService: ConfigService;
+  const openWebsites: VisaWebsite[] = [];
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -16,20 +17,22 @@ describe('VisaWebsite', () => {
 
   it('should start on authentication page', async () => {
     const visaWebsite = new VisaWebsite();
+    openWebsites.push(visaWebsite);
     while (visaWebsite.isNavigating)
       await new Promise((resolve) => setTimeout(resolve, 500));
     expect(visaWebsite.getCurrentPage()).toBe(VisaWebsitePage.Authentication);
-    await visaWebsite.close();
   });
 
   it('should navigate to reschedule page after manual login', async () => {
     const visaWebsite = new VisaWebsite();
+    openWebsites.push(visaWebsite);
     const username = configService.get('VISA_WEBSITE_USERSNAME');
     const password = configService.get('VISA_WEBSITE_PASSWORD');
     visaWebsite.manualLogin(username, password);
     while (visaWebsite.isNavigating)
       await new Promise((resolve) => setTimeout(resolve, 500));
     expect(visaWebsite.getCurrentPage()).toBe(VisaWebsitePage.Reschedule);
-    await visaWebsite.close();
   });
+
+  afterAll(async () => openWebsites.map((website) => website.close()));
 });
