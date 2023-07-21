@@ -32,6 +32,10 @@ export class VisaWebsite {
     return PagesUrlMap[this.page.url()];
   }
 
+  manualLogin(username: string, password: string) {
+    throw new NotImplementedException();
+  }
+
   async close(): Promise<void> {
     await this.browser.close();
   }
