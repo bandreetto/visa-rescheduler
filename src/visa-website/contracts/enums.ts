@@ -1,4 +1,6 @@
 export enum VisaWebsitePage {
-  Authentication,
-  Reschedule,
+  Authentication = 'Authentication',
+  Groups = 'Groups',
+  ScheduleActions = 'ScheduleActions',
+  Reschedule = 'Reschedule',
 }
