@@ -1,5 +1,6 @@
 import {
   VISA_WEBSITE_GROUPS_URL_REGEX,
+  VISA_WEBSITE_SCHEDULE_ACTIONS_URL_REGEX,
   VISA_WEBSITE_SIGNIN_URL,
 } from './contracts/consts';
 import { VisaWebsitePage } from './contracts/enums';
@@ -14,6 +15,8 @@ export function identifyUrl(url: string): VisaWebsitePage {
   if (staticPage) return staticPage;
 
   if (VISA_WEBSITE_GROUPS_URL_REGEX.test(url)) return VisaWebsitePage.Groups;
+  if (VISA_WEBSITE_SCHEDULE_ACTIONS_URL_REGEX.test(url))
+    return VisaWebsitePage.ScheduleActions;
 
   throw new Error(`Could not identify page with url: ${url}`);
 }

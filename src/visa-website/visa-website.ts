@@ -57,31 +57,24 @@ export class VisaWebsite {
     this.isNavigating = false;
   }
 
+  async selectGroup(): Promise<void> {
+    this.logger.log('Selecting first group');
+
+    const page = await this.pagePromise;
+    await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('a'));
+      const anchor = anchors.find((a) => a.textContent === 'Continuar');
+      if (!anchor) throw new Error('Could not find groups continue button');
+      anchor.click();
+    });
+
+    this.isNavigating = true;
+    this.logger.log('Group selected successfully!');
+    await page.waitForNavigation();
+    this.isNavigating = false;
+  }
+
   async close(): Promise<void> {
     await this.browser.close();
   }
-
-  // private configureEvents(page: Page) {
-  //   page.on('framenavigated', (frame) => {
-  //     const currentPage = identifyUrl(frame.url());
-  //     console.log(currentPage);
-  //     if (!currentPage) return;
-
-  //     switch (currentPage) {
-  //       case VisaWebsitePage.Groups:
-  //         this.logger.log('Navigated to groups page, selecting group');
-  //         this.selectGroup(page);
-  //         break;
-  //     }
-  //   });
-  // }
-
-  // private selectGroup(page: Page) {
-  //   return page.evaluate(() => {
-  //     const anchors = Array.from(document.querySelectorAll('a'));
-  //     const anchor = anchors.find((a) => a.textContent === 'Continuar');
-  //     if (!anchor) throw new Error('Could not find groups continue button');
-  //     anchor.click();
-  //   });
-  // }
 }

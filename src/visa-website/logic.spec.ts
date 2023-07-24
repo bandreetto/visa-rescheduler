@@ -1,5 +1,6 @@
 import {
   VISA_WEBSITE_GROUPS_BASE_URL,
+  VISA_WEBSITE_SCHEDULE_ACTIONS_BASE_URL,
   VISA_WEBSITE_SIGNIN_URL,
 } from './contracts/consts';
 import { VisaWebsitePage } from './contracts/enums';
@@ -16,6 +17,15 @@ describe('Visa Website Logic', () => {
       VISA_WEBSITE_GROUPS_BASE_URL + '/' + Math.round(Math.random() * 1000000),
     );
     expect(page).toBe(VisaWebsitePage.Groups);
+  });
+
+  it('should correctly identify schedule actions page', () => {
+    const page = identifyUrl(
+      `${VISA_WEBSITE_SCHEDULE_ACTIONS_BASE_URL}/${Math.round(
+        Math.random() * 1000000,
+      )}/continue_actions`,
+    );
+    expect(page).toBe(VisaWebsitePage.ScheduleActions);
   });
 
   it('should throw error on unknown page', () => {
