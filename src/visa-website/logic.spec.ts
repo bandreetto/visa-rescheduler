@@ -17,4 +17,10 @@ describe('Visa Website Logic', () => {
     );
     expect(page).toBe(VisaWebsitePage.Groups);
   });
+
+  it('should throw error on unknown page', () => {
+    expect(() => identifyUrl('garbage')).toThrow(
+      'Could not identify page with url: garbage',
+    );
+  });
 });

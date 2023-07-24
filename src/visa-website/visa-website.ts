@@ -26,7 +26,6 @@ export class VisaWebsite {
         .then(() => (this.isNavigating = false));
       this.logger.log('Navigation finished');
 
-      this.configureEvents(page);
       resolvePage(page);
     });
   }
@@ -52,25 +51,37 @@ export class VisaWebsite {
     await page.click('[name="commit"]');
 
     this.isNavigating = true;
-    this.logger.log('Successful login!');
+    this.logger.log('Logging in');
+    await page.waitForNavigation();
+    this.logger.log('Login Successful!');
+    this.isNavigating = false;
   }
 
   async close(): Promise<void> {
     await this.browser.close();
   }
 
-  private configureEvents(page: Page) {
-    page.on('framenavigated', (frame) => {
-      const currentPage = VisaWebsitePage[frame.url()];
-      console.log(currentPage);
-      if (!currentPage) return;
+  // private configureEvents(page: Page) {
+  //   page.on('framenavigated', (frame) => {
+  //     const currentPage = identifyUrl(frame.url());
+  //     console.log(currentPage);
+  //     if (!currentPage) return;
 
-      switch (currentPage) {
-        case VisaWebsitePage.Groups:
-          this.logger.log('Navigated to groups page, selecting group');
-          page.click("a:contains('Continuar')");
-          break;
-      }
-    });
-  }
+  //     switch (currentPage) {
+  //       case VisaWebsitePage.Groups:
+  //         this.logger.log('Navigated to groups page, selecting group');
+  //         this.selectGroup(page);
+  //         break;
+  //     }
+  //   });
+  // }
+
+  // private selectGroup(page: Page) {
+  //   return page.evaluate(() => {
+  //     const anchors = Array.from(document.querySelectorAll('a'));
+  //     const anchor = anchors.find((a) => a.textContent === 'Continuar');
+  //     if (!anchor) throw new Error('Could not find groups continue button');
+  //     anchor.click();
+  //   });
+  // }
 }
