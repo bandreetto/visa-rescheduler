@@ -14,6 +14,12 @@ describe('VisaWebsite', () => {
   let configService: ConfigService;
   const openWebsites: VisaWebsite[] = [];
 
+  function createVisaWebsite(): VisaWebsite {
+    const visaWebsite = new VisaWebsite();
+    openWebsites.push(visaWebsite);
+    return visaWebsite;
+  }
+
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot()],
@@ -23,8 +29,7 @@ describe('VisaWebsite', () => {
   });
 
   it('should start on authentication page', async () => {
-    const visaWebsite = new VisaWebsite();
-    openWebsites.push(visaWebsite);
+    const visaWebsite = createVisaWebsite();
     waitNavigation(visaWebsite);
     expect(await visaWebsite.getCurrentPage()).toBe(
       VisaWebsitePage.Authentication,
@@ -32,8 +37,7 @@ describe('VisaWebsite', () => {
   });
 
   it('should navigate to groups page after login', async () => {
-    const visaWebsite = new VisaWebsite();
-    openWebsites.push(visaWebsite);
+    const visaWebsite = createVisaWebsite();
     const username = configService.get('VISA_WEBSITE_USERSNAME');
     const password = configService.get('VISA_WEBSITE_PASSWORD');
     await visaWebsite.login(username, password);
@@ -42,17 +46,27 @@ describe('VisaWebsite', () => {
   });
 
   it('should correctly navigate to schedule actions page', async () => {
-    const visaWebsite = new VisaWebsite();
-    openWebsites.push(visaWebsite);
+    const visaWebsite = createVisaWebsite();
     const username = configService.get('VISA_WEBSITE_USERSNAME');
     const password = configService.get('VISA_WEBSITE_PASSWORD');
     await visaWebsite.login(username, password);
-    await visaWebsite.selectGroup();
+    await visaWebsite.selectFirstGroup();
     waitNavigation(visaWebsite);
     expect(await visaWebsite.getCurrentPage()).toBe(
       VisaWebsitePage.ScheduleActions,
     );
   });
 
-  afterAll(async () => openWebsites.map((website) => website.close()));
+  it('should correctly navigate to reeschedule appointment page', async () => {
+    const visaWebsite = createVisaWebsite();
+    const username = configService.get('VISA_WEBSITE_USERSNAME');
+    const password = configService.get('VISA_WEBSITE_PASSWORD');
+    await visaWebsite.login(username, password);
+    await visaWebsite.selectFirstGroup();
+    await visaWebsite.selectRescheduleAction();
+    waitNavigation(visaWebsite);
+    expect(await visaWebsite.getCurrentPage()).toBe(VisaWebsitePage.Reschedule);
+  });
+
+  afterEach(async () => openWebsites.map((website) => website.close()));
 });

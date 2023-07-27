@@ -57,7 +57,7 @@ export class VisaWebsite {
     this.isNavigating = false;
   }
 
-  async selectGroup(): Promise<void> {
+  async selectFirstGroup(): Promise<void> {
     this.logger.log('Selecting first group');
 
     const page = await this.pagePromise;
@@ -70,6 +70,37 @@ export class VisaWebsite {
 
     this.isNavigating = true;
     this.logger.log('Group selected successfully!');
+    await page.waitForNavigation();
+    this.isNavigating = false;
+  }
+
+  async selectRescheduleAction(): Promise<void> {
+    this.logger.log('Selecting reschedule action');
+
+    const page = await this.pagePromise;
+
+    this.logger.log('Openning reschedule accordion');
+    await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('h5'));
+      const anchor = anchors.find((h5) =>
+        h5.textContent.includes('Reagendar entrevista'),
+      );
+      if (!anchor) throw new Error('Could not find reschedule accordion');
+      anchor.click();
+    });
+
+    this.logger.log('Clicking reschedule action');
+    await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('a'));
+      const anchor = anchors.find(
+        (a) => a.textContent === 'Reagendar entrevista',
+      );
+      if (!anchor) throw new Error('Could not find groups continue button');
+      anchor.click();
+    });
+
+    this.isNavigating = true;
+    this.logger.log('Reschedule action selected successfully');
     await page.waitForNavigation();
     this.isNavigating = false;
   }

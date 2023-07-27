@@ -28,6 +28,15 @@ describe('Visa Website Logic', () => {
     expect(page).toBe(VisaWebsitePage.ScheduleActions);
   });
 
+  it('should correctly identify reschedule page', () => {
+    const page = identifyUrl(
+      `${VISA_WEBSITE_SCHEDULE_ACTIONS_BASE_URL}/${Math.round(
+        Math.random() * 1000000,
+      )}/appointment`,
+    );
+    expect(page).toBe(VisaWebsitePage.Reschedule);
+  });
+
   it('should throw error on unknown page', () => {
     expect(() => identifyUrl('garbage')).toThrow(
       'Could not identify page with url: garbage',
