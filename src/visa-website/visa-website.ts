@@ -1,33 +1,75 @@
 import { Logger } from '@nestjs/common';
-import puppeteer, { Browser, Page } from 'puppeteer';
-import { VISA_WEBSITE_SIGNIN_URL } from './contracts/consts';
-import { VisaWebsitePage } from './contracts/enums';
+import { EventEmitter } from 'node:events';
+import { Browser, Page } from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import {
+  AVAILABLE_SCHEDULE_DATES_RESOURCE_REGEX,
+  SIGNIN_URL,
+} from './contracts/consts';
+import { VisaWebsiteEvent, VisaWebsitePage } from './contracts/enums';
 import { identifyUrl } from './logic';
+
+type VisaWebsiteEventHandlers = {
+  [VisaWebsiteEvent.AvailableScheduleDates]: (dates: Date[]) => void;
+};
 
 export class VisaWebsite {
   private readonly logger = new Logger(VisaWebsite.name);
   private pagePromise: Promise<Page>;
   private browser: Browser;
+  private emitter = new EventEmitter();
   public isNavigating = true;
 
   constructor() {
+    puppeteer.use(StealthPlugin());
+
     let resolvePage: (page: Page) => void;
     this.pagePromise = new Promise((resolve) => (resolvePage = resolve));
 
     this.logger.log('Launching browser');
-    puppeteer.launch({ headless: false }).then(async (browser) => {
-      this.browser = browser;
-      const [page] = await browser.pages();
+    puppeteer
+      .launch({
+        headless: false,
+        args: ['--no-sandbox'],
+        executablePath:
+          '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      })
+      .then(async (browser) => {
+        this.browser = browser;
+        const page = await browser.newPage();
 
-      this.logger.log('Navigating to visa website');
-      this.isNavigating = true;
-      await page
-        .goto(VISA_WEBSITE_SIGNIN_URL)
-        .then(() => (this.isNavigating = false));
-      this.logger.log('Navigation finished');
+        this.logger.log('Navigating to visa website');
+        this.isNavigating = true;
+        await page.goto(SIGNIN_URL).then(() => (this.isNavigating = false));
+        this.logger.log('Navigation finished');
 
-      resolvePage(page);
+        this.configureEvents(page);
+        resolvePage(page);
+      });
+  }
+
+  configureEvents(page: Page): void {
+    page.on('response', async (response) => {
+      const isAvailableScheduleOptions =
+        AVAILABLE_SCHEDULE_DATES_RESOURCE_REGEX.test(response.url());
+      if (isAvailableScheduleOptions) {
+        this.logger.log('Found new available schedule dates!');
+        console.log(await response.json());
+        this.emitter.emit(
+          VisaWebsiteEvent.AvailableScheduleDates,
+          await response.json(),
+        );
+      }
     });
+  }
+
+  on<T extends VisaWebsiteEvent>(
+    event: T,
+    handler: VisaWebsiteEventHandlers[T],
+  ) {
+    this.logger.log(`Registering listener for event ${event}`);
+    this.emitter.on(event, handler);
   }
 
   async getCurrentPage(): Promise<VisaWebsitePage> {

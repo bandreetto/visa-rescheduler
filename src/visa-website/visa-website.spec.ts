@@ -1,6 +1,6 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { VisaWebsitePage } from './contracts/enums';
+import { VisaWebsiteEvent, VisaWebsitePage } from './contracts/enums';
 import { VisaWebsite } from './visa-website';
 
 jest.setTimeout(30000);
@@ -30,7 +30,6 @@ describe('VisaWebsite', () => {
 
   it('should start on authentication page', async () => {
     const visaWebsite = createVisaWebsite();
-    waitNavigation(visaWebsite);
     expect(await visaWebsite.getCurrentPage()).toBe(
       VisaWebsitePage.Authentication,
     );
@@ -41,7 +40,6 @@ describe('VisaWebsite', () => {
     const username = configService.get('VISA_WEBSITE_USERSNAME');
     const password = configService.get('VISA_WEBSITE_PASSWORD');
     await visaWebsite.login(username, password);
-    waitNavigation(visaWebsite);
     expect(await visaWebsite.getCurrentPage()).toBe(VisaWebsitePage.Groups);
   });
 
@@ -51,7 +49,6 @@ describe('VisaWebsite', () => {
     const password = configService.get('VISA_WEBSITE_PASSWORD');
     await visaWebsite.login(username, password);
     await visaWebsite.selectFirstGroup();
-    waitNavigation(visaWebsite);
     expect(await visaWebsite.getCurrentPage()).toBe(
       VisaWebsitePage.ScheduleActions,
     );
@@ -64,8 +61,24 @@ describe('VisaWebsite', () => {
     await visaWebsite.login(username, password);
     await visaWebsite.selectFirstGroup();
     await visaWebsite.selectRescheduleAction();
-    waitNavigation(visaWebsite);
     expect(await visaWebsite.getCurrentPage()).toBe(VisaWebsitePage.Reschedule);
+  });
+
+  it('should correclty retrieve available schedule dates', async () => {
+    const visaWebsite = createVisaWebsite();
+    let availableDates: Array<Date>;
+    visaWebsite.on(
+      VisaWebsiteEvent.AvailableScheduleDates,
+      (dates) => (availableDates = dates),
+    );
+
+    const username = configService.get('VISA_WEBSITE_USERSNAME');
+    const password = configService.get('VISA_WEBSITE_PASSWORD');
+    await visaWebsite.login(username, password);
+    await visaWebsite.selectFirstGroup();
+    await visaWebsite.selectRescheduleAction();
+    expect(Array.isArray(availableDates)).toBe(true);
+    expect(availableDates.length).toBeGreaterThan(1);
   });
 
   afterEach(async () => openWebsites.map((website) => website.close()));

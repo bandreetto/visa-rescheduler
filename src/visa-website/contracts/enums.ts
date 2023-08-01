@@ -4,3 +4,7 @@ export enum VisaWebsitePage {
   ScheduleActions = 'ScheduleActions',
   Reschedule = 'Reschedule',
 }
+
+export enum VisaWebsiteEvent {
+  AvailableScheduleDates = 'AvailableScheduleDates',
+}
