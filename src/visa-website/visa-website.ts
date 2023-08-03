@@ -55,7 +55,6 @@ export class VisaWebsite {
         AVAILABLE_SCHEDULE_DATES_RESOURCE_REGEX.test(response.url());
       if (isAvailableScheduleOptions) {
         this.logger.log('Found new available schedule dates!');
-        console.log(await response.json());
         this.emitter.emit(
           VisaWebsiteEvent.AvailableScheduleDates,
           await response.json(),

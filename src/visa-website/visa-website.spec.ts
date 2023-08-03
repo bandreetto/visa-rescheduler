@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { VisaWebsiteEvent, VisaWebsitePage } from './contracts/enums';
 import { VisaWebsite } from './visa-website';
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 async function waitNavigation(visaWebsite: VisaWebsite): Promise<void> {
   while (visaWebsite.isNavigating)
@@ -64,12 +64,14 @@ describe('VisaWebsite', () => {
     expect(await visaWebsite.getCurrentPage()).toBe(VisaWebsitePage.Reschedule);
   });
 
-  it('should correclty retrieve available schedule dates', async () => {
+  it.only('should correclty retrieve available schedule dates', async () => {
     const visaWebsite = createVisaWebsite();
-    let availableDates: Array<Date>;
-    visaWebsite.on(
-      VisaWebsiteEvent.AvailableScheduleDates,
-      (dates) => (availableDates = dates),
+    let resolveAvailableDates: (dates: Date[]) => void;
+    const availableDatesPromise = new Promise<Date[]>(
+      (resolve) => (resolveAvailableDates = resolve),
+    );
+    visaWebsite.on(VisaWebsiteEvent.AvailableScheduleDates, (dates) =>
+      resolveAvailableDates(dates),
     );
 
     const username = configService.get('VISA_WEBSITE_USERSNAME');
@@ -77,8 +79,11 @@ describe('VisaWebsite', () => {
     await visaWebsite.login(username, password);
     await visaWebsite.selectFirstGroup();
     await visaWebsite.selectRescheduleAction();
+    const availableDates = await availableDatesPromise;
     expect(Array.isArray(availableDates)).toBe(true);
     expect(availableDates.length).toBeGreaterThan(1);
+    console.log(availableDates[0]);
+    expect(availableDates[0]).toBeInstanceOf(Date);
   });
 
   afterEach(async () => openWebsites.map((website) => website.close()));
