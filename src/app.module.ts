@@ -5,4 +5,4 @@ import { VisaWebsiteModule } from './visa-website/visa-website.module';
 @Module({
   imports: [VisaWebsiteModule, ConfigModule.forRoot()],
 })
-export class AppModule {}
+export class AppModule { }

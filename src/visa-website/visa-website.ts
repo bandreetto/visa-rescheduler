@@ -3,6 +3,7 @@ import { EventEmitter } from 'node:events';
 import { Browser, Page } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { AvailableDate } from './contracts';
 import {
   AVAILABLE_SCHEDULE_DATES_RESOURCE_REGEX,
   SIGNIN_URL,
@@ -11,7 +12,7 @@ import { VisaWebsiteEvent, VisaWebsitePage } from './contracts/enums';
 import { identifyUrl } from './logic';
 
 type VisaWebsiteEventHandlers = {
-  [VisaWebsiteEvent.AvailableScheduleDates]: (dates: Date[]) => void;
+  [VisaWebsiteEvent.AvailableScheduleDates]: (dates: AvailableDate[]) => void;
 };
 
 export class VisaWebsite {

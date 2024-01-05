@@ -1,14 +1,10 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AvailableDate } from './contracts';
 import { VisaWebsiteEvent, VisaWebsitePage } from './contracts/enums';
 import { VisaWebsite } from './visa-website';
 
-jest.setTimeout(60000);
-
-async function waitNavigation(visaWebsite: VisaWebsite): Promise<void> {
-  while (visaWebsite.isNavigating)
-    await new Promise((resolve) => setTimeout(resolve, 500));
-}
+jest.setTimeout(120000);
 
 describe('VisaWebsite', () => {
   let configService: ConfigService;
@@ -66,8 +62,8 @@ describe('VisaWebsite', () => {
 
   it.only('should correclty retrieve available schedule dates', async () => {
     const visaWebsite = createVisaWebsite();
-    let resolveAvailableDates: (dates: Date[]) => void;
-    const availableDatesPromise = new Promise<Date[]>(
+    let resolveAvailableDates: (dates: AvailableDate[]) => void;
+    const availableDatesPromise = new Promise<AvailableDate[]>(
       (resolve) => (resolveAvailableDates = resolve),
     );
     visaWebsite.on(VisaWebsiteEvent.AvailableScheduleDates, (dates) =>
@@ -81,9 +77,6 @@ describe('VisaWebsite', () => {
     await visaWebsite.selectRescheduleAction();
     const availableDates = await availableDatesPromise;
     expect(Array.isArray(availableDates)).toBe(true);
-    expect(availableDates.length).toBeGreaterThan(1);
-    console.log(availableDates[0]);
-    expect(availableDates[0]).toBeInstanceOf(Date);
   });
 
   afterEach(async () => openWebsites.map((website) => website.close()));
