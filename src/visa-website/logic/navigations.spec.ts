@@ -1,10 +1,10 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Page } from 'puppeteer';
-import { LoginPage } from '../contracts';
+import { GroupSelectionPage, LoginPage } from '../contracts';
 import { VisaWebsiteUrl } from '../contracts/enums';
 import { identifyUrl } from './identify-url';
-import { authenticate, createNewPage } from './navigations';
+import { authenticate, createNewPage, selectFirstGroup } from './navigations';
 
 jest.setTimeout(120000);
 describe('Navigations Logic', () => {
@@ -17,6 +17,19 @@ describe('Navigations Logic', () => {
     );
     if (openLoginPage) return openLoginPage;
     return createNewPage();
+  }
+
+  async function getGroupsPage(
+    username: string,
+    password: string,
+  ): Promise<GroupSelectionPage> {
+    const openGroupsPage = openPages.find(
+      (page) => identifyUrl(page.url()) === VisaWebsiteUrl.Groups,
+    );
+    if (openGroupsPage) return openGroupsPage;
+
+    const loginPage = await getLoginPage();
+    return authenticate(loginPage, username, password);
   }
 
   beforeAll(async () => {
@@ -42,6 +55,16 @@ describe('Navigations Logic', () => {
       configService.get('VISA_WEBSITE_PASSWORD'),
     );
     expect(identifyUrl(newPage.url())).toBe(VisaWebsiteUrl.Groups);
+  });
+
+  it('should correctly select group', async () => {
+    const groupsPage = await getGroupsPage(
+      configService.get('VISA_WEBSITE_USERSNAME'),
+      configService.get('VISA_WEBSITE_PASSWORD'),
+    );
+
+    const newPage = await selectFirstGroup(groupsPage);
+    expect(identifyUrl(newPage.url())).toBe(VisaWebsiteUrl.GroupActions);
   });
 
   afterAll(() => openPages.map((page) => page.browser().close()));

@@ -39,7 +39,7 @@ describe.skip('VisaWebsite', () => {
     await visaWebsite.login(username, password);
     await visaWebsite.selectFirstGroup();
     expect(await visaWebsite.getCurrentPage()).toBe(
-      VisaWebsiteUrl.ScheduleActions,
+      VisaWebsiteUrl.GroupActions,
     );
   });
 

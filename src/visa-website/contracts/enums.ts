@@ -1,7 +1,7 @@
 export enum VisaWebsiteUrl {
   Authentication = 'Authentication',
   Groups = 'Groups',
-  ScheduleActions = 'ScheduleActions',
+  GroupActions = 'GroupActions',
   Reschedule = 'Reschedule',
 }
 

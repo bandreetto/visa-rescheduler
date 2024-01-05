@@ -1,4 +1,4 @@
-import { GroupSelectionPage, LoginPage } from '../contracts';
+import { GroupActionsPage, GroupSelectionPage, LoginPage } from '../contracts';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import puppeteer from 'puppeteer-extra';
 import { SIGNIN_URL } from '../contracts/consts';
@@ -53,4 +53,25 @@ export async function authenticate(
   if (identifyUrl(page.url()) === VisaWebsiteUrl.Groups) return page;
 
   throw new Error('Navigated to unexpected page after authentication');
+}
+
+export async function selectFirstGroup(
+  page: GroupSelectionPage,
+): Promise<GroupActionsPage> {
+  const logger = new Logger('Logic/createNewPage');
+  logger.log('Selecting first group');
+
+  await page.evaluate(() => {
+    const anchors = Array.from(document.querySelectorAll('a'));
+    const anchor = anchors.find((a) => a.textContent === 'Continuar');
+    if (!anchor) throw new Error('Could not find groups continue button');
+    anchor.click();
+  });
+
+  logger.log('Group selected successfully!');
+  await page.waitForNavigation();
+
+  if (identifyUrl(page.url()) === VisaWebsiteUrl.GroupActions) return page;
+
+  throw new Error('Navigated to unexpected page after group selection');
 }

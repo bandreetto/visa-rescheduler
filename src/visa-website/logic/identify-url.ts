@@ -16,8 +16,7 @@ export function identifyUrl(url: string): VisaWebsiteUrl {
   if (staticPage) return staticPage;
 
   if (GROUPS_URL_REGEX.test(url)) return VisaWebsiteUrl.Groups;
-  if (SCHEDULE_ACTIONS_URL_REGEX.test(url))
-    return VisaWebsiteUrl.ScheduleActions;
+  if (SCHEDULE_ACTIONS_URL_REGEX.test(url)) return VisaWebsiteUrl.GroupActions;
   if (RESCHEDULE_URL_REGEX.test(url)) return VisaWebsiteUrl.Reschedule;
 
   throw new Error(`Could not identify page with url: ${url}`);

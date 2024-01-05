@@ -25,7 +25,7 @@ describe('Visa Website Logic', () => {
         Math.random() * 1000000,
       )}/continue_actions`,
     );
-    expect(page).toBe(VisaWebsiteUrl.ScheduleActions);
+    expect(page).toBe(VisaWebsiteUrl.GroupActions);
   });
 
   it('should correctly identify reschedule page', () => {
