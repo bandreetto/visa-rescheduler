@@ -1,4 +1,4 @@
-export enum VisaWebsitePage {
+export enum VisaWebsiteUrl {
   Authentication = 'Authentication',
   Groups = 'Groups',
   ScheduleActions = 'ScheduleActions',

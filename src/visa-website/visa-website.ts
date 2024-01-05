@@ -8,7 +8,7 @@ import {
   AVAILABLE_SCHEDULE_DATES_RESOURCE_REGEX,
   SIGNIN_URL,
 } from './contracts/consts';
-import { VisaWebsiteEvent, VisaWebsitePage } from './contracts/enums';
+import { VisaWebsiteEvent, VisaWebsiteUrl } from './contracts/enums';
 import { identifyUrl } from './logic';
 
 type VisaWebsiteEventHandlers = {
@@ -72,7 +72,7 @@ export class VisaWebsite {
     this.emitter.on(event, handler);
   }
 
-  async getCurrentPage(): Promise<VisaWebsitePage> {
+  async getCurrentPage(): Promise<VisaWebsiteUrl> {
     const page = await this.pagePromise;
     return identifyUrl(page.url());
   }

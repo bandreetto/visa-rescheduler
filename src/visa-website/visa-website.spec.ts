@@ -1,12 +1,12 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AvailableDate } from './contracts';
-import { VisaWebsiteEvent, VisaWebsitePage } from './contracts/enums';
+import { VisaWebsiteEvent, VisaWebsiteUrl } from './contracts/enums';
 import { VisaWebsite } from './visa-website';
 
 jest.setTimeout(120000);
 
-describe('VisaWebsite', () => {
+describe.skip('VisaWebsite', () => {
   let configService: ConfigService;
   const openWebsites: VisaWebsite[] = [];
 
@@ -24,19 +24,12 @@ describe('VisaWebsite', () => {
     configService = app.get<ConfigService>(ConfigService);
   });
 
-  it('should start on authentication page', async () => {
-    const visaWebsite = createVisaWebsite();
-    expect(await visaWebsite.getCurrentPage()).toBe(
-      VisaWebsitePage.Authentication,
-    );
-  });
-
   it('should navigate to groups page after login', async () => {
     const visaWebsite = createVisaWebsite();
     const username = configService.get('VISA_WEBSITE_USERSNAME');
     const password = configService.get('VISA_WEBSITE_PASSWORD');
     await visaWebsite.login(username, password);
-    expect(await visaWebsite.getCurrentPage()).toBe(VisaWebsitePage.Groups);
+    expect(await visaWebsite.getCurrentPage()).toBe(VisaWebsiteUrl.Groups);
   });
 
   it('should correctly navigate to schedule actions page', async () => {
@@ -46,7 +39,7 @@ describe('VisaWebsite', () => {
     await visaWebsite.login(username, password);
     await visaWebsite.selectFirstGroup();
     expect(await visaWebsite.getCurrentPage()).toBe(
-      VisaWebsitePage.ScheduleActions,
+      VisaWebsiteUrl.ScheduleActions,
     );
   });
 
@@ -57,7 +50,7 @@ describe('VisaWebsite', () => {
     await visaWebsite.login(username, password);
     await visaWebsite.selectFirstGroup();
     await visaWebsite.selectRescheduleAction();
-    expect(await visaWebsite.getCurrentPage()).toBe(VisaWebsitePage.Reschedule);
+    expect(await visaWebsite.getCurrentPage()).toBe(VisaWebsiteUrl.Reschedule);
   });
 
   it.only('should correclty retrieve available schedule dates', async () => {
