@@ -1,4 +1,9 @@
-import { GroupActionsPage, GroupSelectionPage, LoginPage } from '../contracts';
+import {
+  GroupActionsPage,
+  GroupSelectionPage,
+  LoginPage,
+  ReschedulePage,
+} from '../contracts';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import puppeteer from 'puppeteer-extra';
 import { SIGNIN_URL } from '../contracts/consts';
@@ -32,7 +37,7 @@ export async function authenticate(
   username: string,
   password: string,
 ): Promise<GroupSelectionPage> {
-  const logger = new Logger('Logic/createNewPage');
+  const logger = new Logger('Logic/authenticate');
 
   logger.log('Inputting username: ' + username);
   await page.type('#user_email', username);
@@ -58,7 +63,7 @@ export async function authenticate(
 export async function selectFirstGroup(
   page: GroupSelectionPage,
 ): Promise<GroupActionsPage> {
-  const logger = new Logger('Logic/createNewPage');
+  const logger = new Logger('Logic/selectFirstGroup');
   logger.log('Selecting first group');
 
   await page.evaluate(() => {
@@ -74,4 +79,40 @@ export async function selectFirstGroup(
   if (identifyUrl(page.url()) === VisaWebsiteUrl.GroupActions) return page;
 
   throw new Error('Navigated to unexpected page after group selection');
+}
+
+export async function selectRescheduleAction(
+  page: GroupActionsPage,
+): Promise<ReschedulePage> {
+  const logger = new Logger('Logic/selectRescheduleAction');
+  logger.log('Selecting reschedule action');
+
+  logger.log('Openning reschedule accordion');
+  await page.evaluate(() => {
+    const anchors = Array.from(document.querySelectorAll('h5'));
+    const anchor = anchors.find((h5) =>
+      h5.textContent.includes('Reagendar entrevista'),
+    );
+    if (!anchor) throw new Error('Could not find reschedule accordion');
+    anchor.click();
+  });
+
+  logger.log('Clicking reschedule action');
+  await page.evaluate(() => {
+    const anchors = Array.from(document.querySelectorAll('a'));
+    const anchor = anchors.find(
+      (a) => a.textContent === 'Reagendar entrevista',
+    );
+    if (!anchor) throw new Error('Could not find groups continue button');
+    anchor.click();
+  });
+
+  logger.log('Reschedule action selected successfully');
+  await page.waitForNavigation();
+
+  if (identifyUrl(page.url()) === VisaWebsiteUrl.Reschedule) return page;
+
+  throw new Error(
+    'Navigated to unexpected page after selecting reschedule page',
+  );
 }

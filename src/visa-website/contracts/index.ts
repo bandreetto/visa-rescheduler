@@ -7,3 +7,5 @@ export class LoginPage extends Page {}
 export class GroupSelectionPage extends Page {}
 
 export class GroupActionsPage extends Page {}
+
+export class ReschedulePage extends Page {}

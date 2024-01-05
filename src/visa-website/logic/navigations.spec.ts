@@ -1,10 +1,15 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Page } from 'puppeteer';
-import { GroupSelectionPage, LoginPage } from '../contracts';
+import { GroupActionsPage, GroupSelectionPage, LoginPage } from '../contracts';
 import { VisaWebsiteUrl } from '../contracts/enums';
 import { identifyUrl } from './identify-url';
-import { authenticate, createNewPage, selectFirstGroup } from './navigations';
+import {
+  authenticate,
+  createNewPage,
+  selectFirstGroup,
+  selectRescheduleAction,
+} from './navigations';
 
 jest.setTimeout(120000);
 describe('Navigations Logic', () => {
@@ -30,6 +35,19 @@ describe('Navigations Logic', () => {
 
     const loginPage = await getLoginPage();
     return authenticate(loginPage, username, password);
+  }
+
+  async function getGroupActionsPage(
+    username: string,
+    password: string,
+  ): Promise<GroupActionsPage> {
+    const openGroupActionsPage = openPages.find(
+      (page) => identifyUrl(page.url()) === VisaWebsiteUrl.GroupActions,
+    );
+    if (openGroupActionsPage) return openGroupActionsPage;
+
+    const groupsPage = await getGroupsPage(username, password);
+    return selectFirstGroup(groupsPage);
   }
 
   beforeAll(async () => {
@@ -65,6 +83,15 @@ describe('Navigations Logic', () => {
 
     const newPage = await selectFirstGroup(groupsPage);
     expect(identifyUrl(newPage.url())).toBe(VisaWebsiteUrl.GroupActions);
+  });
+
+  it('should correctly navigate to reeschedule appointment page', async () => {
+    const groupActionsPage = await getGroupActionsPage(
+      configService.get('VISA_WEBSITE_USERSNAME'),
+      configService.get('VISA_WEBSITE_PASSWORD'),
+    );
+    const newPage = await selectRescheduleAction(groupActionsPage);
+    expect(identifyUrl(newPage.url())).toBe(VisaWebsiteUrl.Reschedule);
   });
 
   afterAll(() => openPages.map((page) => page.browser().close()));
