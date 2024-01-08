@@ -11,8 +11,9 @@ import { Logger } from '@nestjs/common';
 import { identifyUrl } from './identify-url';
 import { VisaWebsiteUrl } from '../contracts/enums';
 
+const logger = new Logger('VisaWebsite/Logic');
+
 export async function createNewPage(): Promise<LoginPage> {
-  const logger = new Logger('Logic/createNewPage');
   puppeteer.use(StealthPlugin());
 
   logger.log('Launching browser');
@@ -37,8 +38,6 @@ export async function authenticate(
   username: string,
   password: string,
 ): Promise<GroupSelectionPage> {
-  const logger = new Logger('Logic/authenticate');
-
   logger.log('Inputting username: ' + username);
   await page.type('#user_email', username);
 
@@ -63,7 +62,6 @@ export async function authenticate(
 export async function selectFirstGroup(
   page: GroupSelectionPage,
 ): Promise<GroupActionsPage> {
-  const logger = new Logger('Logic/selectFirstGroup');
   logger.log('Selecting first group');
 
   await page.evaluate(() => {
@@ -84,7 +82,6 @@ export async function selectFirstGroup(
 export async function selectRescheduleAction(
   page: GroupActionsPage,
 ): Promise<ReschedulePage> {
-  const logger = new Logger('Logic/selectRescheduleAction');
   logger.log('Selecting reschedule action');
 
   logger.log('Openning reschedule accordion');

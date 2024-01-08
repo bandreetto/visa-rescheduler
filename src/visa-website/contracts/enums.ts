@@ -6,5 +6,5 @@ export enum VisaWebsiteUrl {
 }
 
 export enum VisaWebsiteEvent {
-  AvailableScheduleDates = 'AvailableScheduleDates',
+  NewAvailableScheduleDates = 'NewAvailableScheduleDates',
 }

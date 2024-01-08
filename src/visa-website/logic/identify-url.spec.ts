@@ -6,7 +6,7 @@ import {
 import { VisaWebsiteUrl } from '../contracts/enums';
 import { identifyUrl } from './identify-url';
 
-describe('Visa Website Logic', () => {
+describe('Identify Url Logic', () => {
   it('should correclty identify authentication page', () => {
     const page = identifyUrl(SIGNIN_URL);
     expect(page).toBe(VisaWebsiteUrl.Authentication);
