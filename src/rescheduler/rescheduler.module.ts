@@ -9,10 +9,11 @@ import {
   selectRescheduleAction,
 } from 'src/visa-website/logic/navigations';
 import { Consumer } from './consumer/consumer';
+import { ReschedulerService } from './rescheduler.service';
 
 @Module({
   imports: [ConfigModule],
-  providers: [Consumer],
+  providers: [Consumer, ReschedulerService],
 })
 export class ReschedulerModule implements OnApplicationBootstrap {
   private logger = new Logger(ReschedulerModule.name);
