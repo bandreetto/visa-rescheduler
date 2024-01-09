@@ -22,4 +22,6 @@ describe('Consumer', () => {
   it('should be defined', () => {
     expect(consumer).toBeDefined();
   });
+
+  it('should try to reschedule when there are earlier dates', () => {});
 });

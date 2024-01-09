@@ -1,36 +1,33 @@
 import { Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { VisaWebsiteEvent } from 'src/visa-website/contracts/enums';
-import { onPageEvent } from 'src/visa-website/logic/actions';
-import {
-  authenticate,
-  createNewPage,
-  selectFirstGroup,
-  selectRescheduleAction,
-} from 'src/visa-website/logic/navigations';
+import { NavigationService } from 'src/visa-website/navigation/navigation.service';
+import { VisaWebsiteModule } from 'src/visa-website/visa-website.module';
+import { WebsiteActionsService } from 'src/visa-website/website-actions/website-actions.service';
 import { Consumer } from './consumer/consumer';
-import { ReschedulerService } from './rescheduler.service';
 
 @Module({
-  imports: [ConfigModule],
-  providers: [Consumer, ReschedulerService],
+  imports: [VisaWebsiteModule],
+  providers: [Consumer],
 })
 export class ReschedulerModule implements OnApplicationBootstrap {
   private logger = new Logger(ReschedulerModule.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly navigationService: NavigationService,
+    private readonly websiteActionsService: WebsiteActionsService,
+  ) {}
 
   async onApplicationBootstrap() {
-    const newPage = await createNewPage();
-    onPageEvent(newPage, VisaWebsiteEvent.NewAvailableScheduleDates, (dates) =>
-      this.logger.log('Available reschedule dates', dates),
-    );
-    const groupsPage = await authenticate(
+    const newPage = await this.navigationService.createNewPage();
+    this.websiteActionsService.listenPageEvent(
       newPage,
-      this.configService.get('VISA_WEBSITE_USERSNAME'),
-      this.configService.get('VISA_WEBSITE_PASSWORD'),
+      VisaWebsiteEvent.NewAvailableScheduleDates,
+      (dates) => this.logger.log('Available reschedule dates', dates),
     );
-    const groupActionsPage = await selectFirstGroup(groupsPage);
-    await selectRescheduleAction(groupActionsPage);
+    const groupsPage = await this.navigationService.authenticate(newPage);
+    const groupActionsPage = await this.navigationService.selectFirstGroup(
+      groupsPage,
+    );
+    await this.navigationService.selectRescheduleAction(groupActionsPage);
   }
 }

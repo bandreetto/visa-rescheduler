@@ -1,4 +1,4 @@
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Page } from 'puppeteer';
 import {
@@ -8,26 +8,28 @@ import {
   LoginPage,
 } from '../contracts';
 import { VisaWebsiteEvent, VisaWebsiteUrl } from '../contracts/enums';
-import { getFirstGroupAppointmentDate, onPageEvent } from './actions';
-import { identifyUrl } from './identify-url';
-import {
-  authenticate,
-  createNewPage,
-  selectFirstGroup,
-  selectRescheduleAction,
-} from './navigations';
+import { identifyUrl } from '../logic';
+import { NavigationService } from '../navigation/navigation.service';
+import { WebsiteActionsService } from './website-actions.service';
 
 jest.setTimeout(120000);
-describe('Actions Logic', () => {
-  let configService: ConfigService;
+describe('WebsiteActionsService', () => {
   const openPages: Page[] = [];
+  let service: WebsiteActionsService;
+  let navigationService: NavigationService;
 
-  beforeAll(async () => {
-    const app: TestingModule = await Test.createTestingModule({
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot()],
+      providers: [WebsiteActionsService, NavigationService],
     }).compile();
 
-    configService = app.get<ConfigService>(ConfigService);
+    service = module.get<WebsiteActionsService>(WebsiteActionsService);
+    navigationService = module.get<NavigationService>(NavigationService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
   });
 
   async function getLoginPage(): Promise<LoginPage> {
@@ -35,43 +37,36 @@ describe('Actions Logic', () => {
       (page) => identifyUrl(page.url()) === VisaWebsiteUrl.Authentication,
     );
     if (openLoginPage) return openLoginPage;
-    const newPage = await createNewPage();
+    const newPage = await navigationService.createNewPage();
     openPages.push(newPage);
     return newPage;
   }
 
-  async function getGroupsPage(
-    username: string,
-    password: string,
-  ): Promise<GroupSelectionPage> {
+  async function getGroupsPage(): Promise<GroupSelectionPage> {
     const openGroupsPage = openPages.find(
       (page) => identifyUrl(page.url()) === VisaWebsiteUrl.Groups,
     );
     if (openGroupsPage) return openGroupsPage;
 
     const loginPage = await getLoginPage();
-    return authenticate(loginPage, username, password);
+    return navigationService.authenticate(loginPage);
   }
 
-  async function getGroupActionsPage(
-    username: string,
-    password: string,
-  ): Promise<GroupActionsPage> {
+  async function getGroupActionsPage(): Promise<GroupActionsPage> {
     const openGroupActionsPage = openPages.find(
       (page) => identifyUrl(page.url()) === VisaWebsiteUrl.GroupActions,
     );
     if (openGroupActionsPage) return openGroupActionsPage;
 
-    const groupsPage = await getGroupsPage(username, password);
-    return selectFirstGroup(groupsPage);
+    const groupsPage = await getGroupsPage();
+    return navigationService.selectFirstGroup(groupsPage);
   }
 
   it('should correctly get current schedule date', async () => {
-    const groupsPage = await getGroupsPage(
-      configService.get('VISA_WEBSITE_USERSNAME'),
-      configService.get('VISA_WEBSITE_PASSWORD'),
+    const groupsPage = await getGroupsPage();
+    const currentScheduleDate = await service.getFirstGroupAppointmentDate(
+      groupsPage,
     );
-    const currentScheduleDate = await getFirstGroupAppointmentDate(groupsPage);
     expect(currentScheduleDate.toString()).not.toBe('Invalid Date');
   });
 
@@ -80,16 +75,13 @@ describe('Actions Logic', () => {
     const availableDatesPromise: Promise<AvailableDate[]> = new Promise(
       (resolve) => (resolveAvailableDates = resolve),
     );
-    const groupActionsPage = await getGroupActionsPage(
-      configService.get('VISA_WEBSITE_USERSNAME'),
-      configService.get('VISA_WEBSITE_PASSWORD'),
-    );
-    onPageEvent(
+    const groupActionsPage = await getGroupActionsPage();
+    service.listenPageEvent(
       groupActionsPage,
       VisaWebsiteEvent.NewAvailableScheduleDates,
       resolveAvailableDates,
     );
-    await selectRescheduleAction(groupActionsPage);
+    await navigationService.selectRescheduleAction(groupActionsPage);
 
     const availableDates = await availableDatesPromise;
 
