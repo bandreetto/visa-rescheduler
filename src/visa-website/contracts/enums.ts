@@ -4,7 +4,3 @@ export enum VisaWebsiteUrl {
   GroupActions = 'GroupActions',
   Reschedule = 'Reschedule',
 }
-
-export enum VisaWebsiteEvent {
-  NewAvailableScheduleDates = 'NewAvailableScheduleDates',
-}

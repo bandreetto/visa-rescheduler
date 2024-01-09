@@ -1,5 +1,5 @@
 import { Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
-import { VisaWebsiteEvent } from 'src/visa-website/contracts/enums';
+import { VisaWebsiteEvent } from 'src/visa-website/contracts/events';
 import { NavigationService } from 'src/visa-website/navigation/navigation.service';
 import { VisaWebsiteModule } from 'src/visa-website/visa-website.module';
 import { WebsiteActionsService } from 'src/visa-website/website-actions/website-actions.service';
@@ -21,8 +21,8 @@ export class ReschedulerModule implements OnApplicationBootstrap {
     const newPage = await this.navigationService.createNewPage();
     this.websiteActionsService.listenPageEvent(
       newPage,
-      VisaWebsiteEvent.NewAvailableScheduleDates,
-      (dates) => this.logger.log('Available reschedule dates', dates),
+      VisaWebsiteEvent.NewAvailableAppointmentDates,
+      ({ payload }) => this.logger.log('Available reschedule dates', payload),
     );
     const groupsPage = await this.navigationService.authenticate(newPage);
     const groupActionsPage = await this.navigationService.selectFirstGroup(

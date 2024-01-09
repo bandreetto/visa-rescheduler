@@ -7,7 +7,8 @@ import {
   GroupSelectionPage,
   LoginPage,
 } from '../contracts';
-import { VisaWebsiteEvent, VisaWebsiteUrl } from '../contracts/enums';
+import { VisaWebsiteUrl } from '../contracts/enums';
+import { VisaWebsiteEvent } from '../contracts/events';
 import { identifyUrl } from '../logic';
 import { NavigationService } from '../navigation/navigation.service';
 import { WebsiteActionsService } from './website-actions.service';
@@ -78,8 +79,8 @@ describe('WebsiteActionsService', () => {
     const groupActionsPage = await getGroupActionsPage();
     service.listenPageEvent(
       groupActionsPage,
-      VisaWebsiteEvent.NewAvailableScheduleDates,
-      resolveAvailableDates,
+      VisaWebsiteEvent.NewAvailableAppointmentDates,
+      ({ payload }) => resolveAvailableDates(payload),
     );
     await navigationService.selectRescheduleAction(groupActionsPage);
 
