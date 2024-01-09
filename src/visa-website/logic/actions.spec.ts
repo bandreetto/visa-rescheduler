@@ -1,8 +1,14 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Page } from 'puppeteer';
-import { GroupActionsPage, GroupSelectionPage, LoginPage } from '../contracts';
-import { VisaWebsiteUrl } from '../contracts/enums';
+import {
+  AvailableDate,
+  GroupActionsPage,
+  GroupSelectionPage,
+  LoginPage,
+} from '../contracts';
+import { VisaWebsiteEvent, VisaWebsiteUrl } from '../contracts/enums';
+import { getFirstGroupAppointmentDate, onPageEvent } from './actions';
 import { identifyUrl } from './identify-url';
 import {
   authenticate,
@@ -12,9 +18,17 @@ import {
 } from './navigations';
 
 jest.setTimeout(120000);
-describe('Navigations Logic', () => {
+describe('Actions Logic', () => {
   let configService: ConfigService;
   const openPages: Page[] = [];
+
+  beforeAll(async () => {
+    const app: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule.forRoot()],
+    }).compile();
+
+    configService = app.get<ConfigService>(ConfigService);
+  });
 
   async function getLoginPage(): Promise<LoginPage> {
     const openLoginPage = openPages.find(
@@ -52,47 +66,34 @@ describe('Navigations Logic', () => {
     return selectFirstGroup(groupsPage);
   }
 
-  beforeAll(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot()],
-    }).compile();
-
-    configService = app.get<ConfigService>(ConfigService);
-  });
-
-  it('should start on authentication page', async () => {
-    const visaWebsitePage = await createNewPage();
-    const url = visaWebsitePage.url();
-    expect(identifyUrl(url)).toBe(VisaWebsiteUrl.Authentication);
-  });
-
-  it('should correctly authenticate', async () => {
-    const loginPage = await getLoginPage();
-    const newPage = await authenticate(
-      loginPage,
-      configService.get('VISA_WEBSITE_USERSNAME'),
-      configService.get('VISA_WEBSITE_PASSWORD'),
-    );
-    expect(identifyUrl(newPage.url())).toBe(VisaWebsiteUrl.Groups);
-  });
-
-  it('should correctly select group', async () => {
+  it('should correctly get current schedule date', async () => {
     const groupsPage = await getGroupsPage(
       configService.get('VISA_WEBSITE_USERSNAME'),
       configService.get('VISA_WEBSITE_PASSWORD'),
     );
-
-    const newPage = await selectFirstGroup(groupsPage);
-    expect(identifyUrl(newPage.url())).toBe(VisaWebsiteUrl.GroupActions);
+    const currentScheduleDate = await getFirstGroupAppointmentDate(groupsPage);
+    expect(currentScheduleDate.toString()).not.toBe('Invalid Date');
   });
 
-  it('should correctly navigate to reeschedule appointment page', async () => {
+  it('should fire new available dates event on reschedule page', async () => {
+    let resolveAvailableDates: (dates: AvailableDate[]) => void;
+    const availableDatesPromise: Promise<AvailableDate[]> = new Promise(
+      (resolve) => (resolveAvailableDates = resolve),
+    );
     const groupActionsPage = await getGroupActionsPage(
       configService.get('VISA_WEBSITE_USERSNAME'),
       configService.get('VISA_WEBSITE_PASSWORD'),
     );
-    const newPage = await selectRescheduleAction(groupActionsPage);
-    expect(identifyUrl(newPage.url())).toBe(VisaWebsiteUrl.Reschedule);
+    onPageEvent(
+      groupActionsPage,
+      VisaWebsiteEvent.NewAvailableScheduleDates,
+      resolveAvailableDates,
+    );
+    await selectRescheduleAction(groupActionsPage);
+
+    const availableDates = await availableDatesPromise;
+
+    expect(Array.isArray(availableDates)).toBe(true);
   });
 
   afterAll(() => openPages.map((page) => page.browser().close()));

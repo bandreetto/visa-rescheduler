@@ -1,7 +1,7 @@
 import { Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { VisaWebsiteEvent } from 'src/visa-website/contracts/enums';
-import { onPageEvent } from 'src/visa-website/logic/listen-event';
+import { onPageEvent } from 'src/visa-website/logic/actions';
 import {
   authenticate,
   createNewPage,
@@ -22,7 +22,7 @@ export class ReschedulerModule implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     const newPage = await createNewPage();
     onPageEvent(newPage, VisaWebsiteEvent.NewAvailableScheduleDates, (dates) =>
-      this.logger.log('Available reeschedule dates', dates),
+      this.logger.log('Available reschedule dates', dates),
     );
     const groupsPage = await authenticate(
       newPage,

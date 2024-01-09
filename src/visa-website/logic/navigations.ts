@@ -13,12 +13,12 @@ import { VisaWebsiteUrl } from '../contracts/enums';
 
 const logger = new Logger('VisaWebsite/Logic');
 
-export async function createNewPage(): Promise<LoginPage> {
+export async function createNewPage(headless = true): Promise<LoginPage> {
   puppeteer.use(StealthPlugin());
 
   logger.log('Launching browser');
   const browser = await puppeteer.launch({
-    headless: false,
+    headless,
     args: ['--no-sandbox'],
     executablePath:
       '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
