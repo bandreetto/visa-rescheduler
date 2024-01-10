@@ -16,6 +16,7 @@ export const AVAILABLE_SCHEDULE_DATES_RESOURCE_REGEX =
 export const EVENT_URL_REGEXES: Record<VisaWebsiteEvent, RegExp> = {
   [VisaWebsiteEvent.NewAvailableAppointmentDates]:
     AVAILABLE_SCHEDULE_DATES_RESOURCE_REGEX,
+  [VisaWebsiteEvent.ListedGroups]: null,
 };
 
 export const MONTHS_DICTIONARY: Record<string, number> = {

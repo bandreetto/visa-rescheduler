@@ -115,4 +115,8 @@ export class NavigationService {
       'Navigated to unexpected page after selecting reschedule page',
     );
   }
+
+  async selectDateForAppointment(date: Date): Promise<void> {
+    throw new Error('not implemented');
+  }
 }

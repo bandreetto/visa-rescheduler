@@ -3,11 +3,11 @@ import { VisaWebsiteEvent } from 'src/visa-website/contracts/events';
 import { NavigationService } from 'src/visa-website/navigation/navigation.service';
 import { VisaWebsiteModule } from 'src/visa-website/visa-website.module';
 import { WebsiteActionsService } from 'src/visa-website/website-actions/website-actions.service';
-import { Consumer } from './consumer/consumer';
+import { RescheduleConsumer } from './consumer/reschedule.consumer';
 
 @Module({
   imports: [VisaWebsiteModule],
-  providers: [Consumer],
+  providers: [RescheduleConsumer],
 })
 export class ReschedulerModule implements OnApplicationBootstrap {
   private logger = new Logger(ReschedulerModule.name);

@@ -1,13 +1,15 @@
 import { Page } from 'puppeteer';
-import { AvailableDate } from './available-date';
-import { VisaWebsiteEvent } from './enums';
 
 export * from './available-date';
 
-export class LoginPage extends Page {}
+export class VisaWebsitePage extends Page {
+  currentAppointmentDate?: Date;
+}
 
-export class GroupSelectionPage extends Page {}
+export class LoginPage extends VisaWebsitePage {}
 
-export class GroupActionsPage extends Page {}
+export class GroupSelectionPage extends VisaWebsitePage {}
 
-export class ReschedulePage extends Page {}
+export class GroupActionsPage extends VisaWebsitePage {}
+
+export class ReschedulePage extends VisaWebsitePage {}
