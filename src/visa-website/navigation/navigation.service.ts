@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { equals } from 'ramda';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import puppeteer from 'puppeteer-extra';
 import {
@@ -7,7 +8,7 @@ import {
   LoginPage,
   ReschedulePage,
 } from '../contracts';
-import { SIGNIN_URL } from '../contracts/consts';
+import { INDEX_MONTHS_DICTIONARY, SIGNIN_URL } from '../contracts/consts';
 import { ConfigService } from '@nestjs/config';
 import { VisaWebsiteUrl } from '../contracts/enums';
 import { identifyUrl } from '../logic';

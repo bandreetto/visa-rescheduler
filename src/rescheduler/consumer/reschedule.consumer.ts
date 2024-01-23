@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import {
-  NewAvailableAppointmentDatesEvent,
-  VisaWebsiteEvent,
-} from 'src/visa-website/contracts/events';
+import { ReschedulePage } from 'src/visa-website/contracts';
+import { PageEvent, VisaWebsiteEvent } from 'src/visa-website/contracts/events';
 import { NavigationService } from 'src/visa-website/navigation/navigation.service';
 import { getDateToReschedule } from '../logic';
 
@@ -13,7 +11,7 @@ export class RescheduleConsumer {
   constructor(private readonly navigationService: NavigationService) {}
 
   @OnEvent(VisaWebsiteEvent.NewAvailableAppointmentDates)
-  handleNewAvailableDates(event: NewAvailableAppointmentDatesEvent) {
+  handleNewAvailableDates(event: PageEvent<ReschedulePage, Date[]>) {
     const dateToSchedule = getDateToReschedule(
       event.page.currentAppointmentDate,
       event.payload,
@@ -24,6 +22,6 @@ export class RescheduleConsumer {
     this.logger.log(
       `Found earlier date available (${dateToSchedule.toLocaleDateString()}), rescheduling...`,
     );
-    this.navigationService.selectDateForAppointment(dateToSchedule);
+    this.navigationService.selectDateForAppointment(event.page, dateToSchedule);
   }
 }

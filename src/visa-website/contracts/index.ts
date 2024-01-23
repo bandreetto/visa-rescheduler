@@ -1,4 +1,5 @@
 import { Page } from 'puppeteer';
+import { AvailableDate } from './available-date';
 
 export * from './available-date';
 

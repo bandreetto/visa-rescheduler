@@ -32,6 +32,7 @@
     "puppeteer": "^19.8.5",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "ramda": "^0.29.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
   },
@@ -42,6 +43,7 @@
     "@types/express": "^4.17.13",
     "@types/jest": "29.5.0",
     "@types/node": "18.15.11",
+    "@types/ramda": "^0.29.10",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",

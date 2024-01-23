@@ -1,12 +1,7 @@
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Page } from 'puppeteer';
-import {
-  AvailableDate,
-  GroupActionsPage,
-  GroupSelectionPage,
-  LoginPage,
-} from '../contracts';
+import { GroupActionsPage, GroupSelectionPage, LoginPage } from '../contracts';
 import { VisaWebsiteUrl } from '../contracts/enums';
 import { VisaWebsiteEvent } from '../contracts/events';
 import { identifyUrl } from '../logic';
@@ -72,8 +67,8 @@ describe('WebsiteActionsService', () => {
   });
 
   it('should fire new available dates event on reschedule page', async () => {
-    let resolveAvailableDates: (dates: AvailableDate[]) => void;
-    const availableDatesPromise: Promise<AvailableDate[]> = new Promise(
+    let resolveAvailableDates: (dates: Date[]) => void;
+    const availableDatesPromise: Promise<Date[]> = new Promise(
       (resolve) => (resolveAvailableDates = resolve),
     );
     const groupActionsPage = await getGroupActionsPage();

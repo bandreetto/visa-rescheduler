@@ -2,7 +2,6 @@ import { ConfigModule } from '@nestjs/config';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { addDays } from 'date-fns';
-import { AvailableDate } from 'src/visa-website/contracts';
 import { VisaWebsiteEvent } from 'src/visa-website/contracts/events';
 import { NavigationService } from 'src/visa-website/navigation/navigation.service';
 import { RescheduleConsumer } from './reschedule.consumer';
@@ -35,18 +34,19 @@ describe('Consumer', () => {
   });
 
   it('should try to reschedule when there are earlier dates', async () => {
-    const availableDates: AvailableDate[] = Array(20)
+    const availableDates: Date[] = Array(20)
       .fill(new Date())
-      .map((date, i) => addDays(date, i - 10))
-      .map((date) => ({ date, business_date: true }));
+      .map((date, i) => addDays(date, i - 10));
 
+    const pageStub = { currentAppointmentDate: new Date() };
     emitter.emit(VisaWebsiteEvent.NewAvailableAppointmentDates, {
-      page: { currentAppointmentDate: new Date() },
+      page: pageStub,
       payload: availableDates,
     });
 
     expect(navigationService.selectDateForAppointment).toHaveBeenCalledWith(
-      availableDates[0].date,
+      pageStub,
+      availableDates[0],
     );
   });
 });
