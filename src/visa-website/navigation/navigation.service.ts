@@ -22,15 +22,17 @@ export class NavigationService {
   async createNewPage(headless = true): Promise<LoginPage> {
     puppeteer.use(StealthPlugin());
 
+    const proxyUrl = 'socks5://localhost:65397';
     this.logger.log('Launching browser');
     const browser = await puppeteer.launch({
       headless,
-      args: ['--no-sandbox'],
+      args: ['--no-sandbox', '--proxy-server=' + proxyUrl],
       executablePath:
         '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     });
 
     const page = await browser.newPage();
+    page.setDefaultNavigationTimeout(90000);
 
     this.logger.log('Navigating to visa website');
     await page.goto(SIGNIN_URL);
@@ -117,7 +119,50 @@ export class NavigationService {
     );
   }
 
-  async selectDateForAppointment(date: Date): Promise<void> {
-    throw new Error('not implemented');
+  async selectDateForAppointment(
+    page: ReschedulePage,
+    date: Date,
+  ): Promise<ReschedulePage> {
+    this.logger.log('Openning date picker');
+    await page.click('#appointments_consulate_appointment_date');
+
+    const month = INDEX_MONTHS_DICTIONARY[date.getMonth()];
+
+    let lastVisibleYears = await page.$$eval(
+      '.ui-datepicker-title',
+      (elements) => elements.map((el) => el.textContent),
+    );
+    let visibleYears = lastVisibleYears;
+    let i = 0;
+    const yearAndMonthToPick = [month, date.getFullYear()].join('\u00A0');
+    while (!visibleYears.includes(yearAndMonthToPick) && i < 36) {
+      await page.click('.ui-datepicker-next');
+      while (equals(visibleYears, lastVisibleYears)) {
+        visibleYears = await page.$$eval('.ui-datepicker-title', (elements) =>
+          elements.map((el) => el.textContent),
+        );
+      }
+      lastVisibleYears = visibleYears;
+      i++;
+    }
+
+    await page.evaluate((dateString) => {
+      const date = new Date(dateString);
+      const dates = Array.from(
+        document.querySelectorAll(
+          `td[data-month="${date.getMonth()}"][data-year="${date.getFullYear()}"] a`,
+        ),
+      );
+      const targetDate = dates.find(
+        (el) => el.textContent.trim() === date.getDate().toString(),
+      );
+      if (!targetDate || !(targetDate instanceof HTMLElement))
+        throw new Error(
+          `Something wen't wrong while finding day ${date.getDate()} cell to click on the DatePicker`,
+        );
+      targetDate.click();
+    }, date);
+
+    return page;
   }
 }

@@ -3,21 +3,27 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Page } from 'puppeteer';
 import { GroupActionsPage, GroupSelectionPage, LoginPage } from '../contracts';
 import { VisaWebsiteUrl } from '../contracts/enums';
+import { VisaWebsiteEvent } from '../contracts/events';
 import { identifyUrl } from '../logic';
+import { WebsiteActionsService } from '../website-actions/website-actions.service';
 import { NavigationService } from './navigation.service';
 
-jest.setTimeout(120000);
+jest.setTimeout(180000);
 describe('VisaWebsiteService', () => {
   let service: NavigationService;
+  let websiteActionsService: WebsiteActionsService;
   const openPages: Page[] = [];
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot()],
-      providers: [NavigationService],
+      providers: [NavigationService, WebsiteActionsService],
     }).compile();
 
     service = module.get<NavigationService>(NavigationService);
+    websiteActionsService = module.get<WebsiteActionsService>(
+      WebsiteActionsService,
+    );
   });
 
   it('should be defined', () => {
@@ -77,6 +83,29 @@ describe('VisaWebsiteService', () => {
     const groupActionsPage = await getGroupActionsPage();
     const newPage = await service.selectRescheduleAction(groupActionsPage);
     expect(identifyUrl(newPage.url())).toBe(VisaWebsiteUrl.Reschedule);
+  });
+
+  it('should correctly select date for reschedule', async () => {
+    const groupActionsPage = await getGroupActionsPage();
+    let resolveAvailableDates: (dates: Date[]) => void;
+    const availableDatesPromise = new Promise<Date[]>(
+      (resolve) => (resolveAvailableDates = resolve),
+    );
+    websiteActionsService.listenPageEvent(
+      groupActionsPage,
+      VisaWebsiteEvent.NewAvailableAppointmentDates,
+      (event) => resolveAvailableDates(event.payload),
+    );
+    const reschedulePage = await service.selectRescheduleAction(
+      groupActionsPage,
+    );
+    const availableDates = await availableDatesPromise;
+    if (!availableDates.length) return;
+    await service.selectDateForAppointment(reschedulePage, availableDates[0]);
+    const selectedDate = await websiteActionsService.getSelectedRescheduleDate(
+      reschedulePage,
+    );
+    expect(selectedDate).toStrictEqual(availableDates[0]);
   });
 
   afterAll(() => openPages.map((page) => page.browser().close()));

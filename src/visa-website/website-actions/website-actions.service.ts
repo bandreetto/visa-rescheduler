@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Page } from 'puppeteer';
-import { GroupSelectionPage } from '../contracts';
+import { GroupSelectionPage, ReschedulePage } from '../contracts';
 import { MONTHS_INDEX_DICTIONARY } from '../contracts/consts';
 import {
   EVENT_URL_REGEXES,
@@ -46,5 +46,21 @@ export class WebsiteActionsService {
       day,
       ...time.split(':').map((digits) => parseInt(digits, 10)),
     );
+  }
+
+  async getSelectedRescheduleDate(page: ReschedulePage): Promise<Date | null> {
+    const rescheduleDateInputSelector =
+      '#appointments_consulate_appointment_date';
+    const dateText = await page.evaluate((inputSelector) => {
+      const input: HTMLInputElement = document.querySelector(inputSelector);
+      return input.value;
+    }, rescheduleDateInputSelector);
+
+    const year = parseInt(dateText.slice(0, 4), 10);
+    const month = parseInt(dateText.slice(5, 7), 10) - 1;
+    const day = parseInt(dateText.slice(8, 10), 10);
+
+    if (dateText) return new Date(year, month, day);
+    return null;
   }
 }
