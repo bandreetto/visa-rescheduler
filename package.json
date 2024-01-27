@@ -34,7 +34,7 @@
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "ramda": "^0.29.1",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
